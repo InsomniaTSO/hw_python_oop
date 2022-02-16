@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 
 class InfoMessage:
@@ -20,10 +20,10 @@ class InfoMessage:
     def get_message(self) -> str:
         """Формирование текстового сообщения."""
         return (f'Тип тренировки: {self.training_type}; '
-                f'Длительность: {"%.3f" % self.duration} ч.; '
-                f'Дистанция: {"%.3f" % self.distance} км; '
-                f'Ср. скорость: {"%.3f" % self.speed} км/ч; '
-                f'Потрачено ккал: {"%.3f" % self.calories}.')
+                f'Длительность: {self.duration:.3f} ч.; '
+                f'Дистанция: {self.distance:.3f} км; '
+                f'Ср. скорость: {self.speed:.3f} км/ч; '
+                f'Потрачено ккал: {self.calories:.3f}.')
 
 
 class Training:
@@ -57,16 +57,12 @@ class Training:
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        class_name = self.__class__.__name__
-        duration = self.duration
-        distance = self.get_distance()
-        speed = self.get_mean_speed()
-        calories = self.get_spent_calories()
-        return InfoMessage(class_name,
-                           duration,
-                           distance,
-                           speed,
-                           calories)
+        return InfoMessage(training_type=self.__class__.__name__,
+                           duration=self.duration,
+                           distance=self.get_distance(),
+                           speed=self.get_mean_speed(),
+                           calories=self.get_spent_calories()
+                           )
 
 
 class Running(Training):
@@ -127,12 +123,12 @@ class Swimming(Training):
                 * self.SWM_K2 * self.weight)
 
 
-def read_package(workout_type: str, data: List[float]) -> Training:
+def read_package(workout_type: str, data: List[float]) -> Optional[Training]:
     """Прочитать данные полученные от датчиков."""
     try:
         return WORKOUT_DICT[workout_type](*data)
     except KeyError:
-        print('Неизвестный тип тренировки')
+        pass
 
 
 WORKOUT_DICT: dict = {'SWM': Swimming,
@@ -142,13 +138,16 @@ WORKOUT_DICT: dict = {'SWM': Swimming,
 
 def main(training: Training) -> None:
     """Главная функция."""
-    info = training.show_training_info()
-    print(info.get_message())
+    if training is None:
+        print('Неизвестный тип тренировки')
+    else:
+        info = training.show_training_info()
+        print(info.get_message())
 
 
 if __name__ == '__main__':
     packages = [
-        ('SWM', [720, 1, 80, 25, 40]),
+        ('SWM1', [720, 1, 80, 25, 40]),
         ('RUN', [15000, 1, 75]),
         ('WLK', [9000, 1, 75, 180]),
     ]
